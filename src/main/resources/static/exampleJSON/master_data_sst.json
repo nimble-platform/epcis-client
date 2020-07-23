@@ -1,0 +1,26 @@
+{
+    "epcismd": {
+        "EPCISBody": {
+            "VocabularyList": [
+                {
+                    "Vocabulary": {
+                        "id": "201",
+                        "type": "urn:epcglobal:epcis:vtype:SubSiteType",
+                        "attributes": {
+                            "urn:epcglobal:cbv:mda#description": "Backroom"
+                        }
+                    }
+                }, 
+                {
+                    "Vocabulary": {
+                        "id": "202",
+                        "type": "urn:epcglobal:epcis:vtype:SubSiteAttribute",
+                        "attributes": {
+                            "urn:epcglobal:cbv:mda#description": "Storage Area"
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

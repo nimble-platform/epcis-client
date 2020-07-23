@@ -1,0 +1,27 @@
+{
+    "epcismd": {
+        "EPCISBody": {
+            "VocabularyList": [
+                {
+                    "Vocabulary": {
+                        "id": "urn:epcglobal:cbv:bizstep:arriving",
+                        "type": "urn:epcglobal:epcis:vtype:BusinessStep",
+                        "attributes": {
+                            "urn:epcglobal:cbv:definition": "Denotes a specific activity within a business process where an object arrives at a location.",
+                            "urn:epcglobal:cbv:example": "Truckload of a shipment arrives into a yard. Shipment has not yet been received or accepted."
+                        }
+                    }
+                }, 
+                {
+                    "Vocabulary": {
+                        "id": "urn:epcglobal:cbv:er:did_not_occur",
+                        "type": "urn:epcglobal:epcis:vtype:ErrorReason",
+                        "attributes": {
+                            "urn:epcglobal:cbv:er:did_not_occur": "The prior event is considered erroneous because it did not actually occur. There are no corrective events. (In a CBV-Compliant Document, this error reason SHALL NOT be used in an error declaration that contains one or more corrective event IDs.)"
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

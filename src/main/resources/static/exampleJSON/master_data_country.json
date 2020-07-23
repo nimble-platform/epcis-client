@@ -1,0 +1,26 @@
+{
+    "epcismd": {
+        "EPCISBody": {
+            "VocabularyList": [
+                {
+                    "Vocabulary": {
+                        "id": "af",
+                        "type": "urn:epcglobal:epcis:vtype:CountryCode",
+                        "attributes": {
+                            "urn:epcglobal:cbv:mda#description": "Afghanistan"
+                        }
+                    }
+                }, 
+                {
+                    "Vocabulary": {
+                        "id": "al",
+                        "type": "urn:epcglobal:epcis:vtype:CountryCode",
+                        "attributes": {
+                            "urn:epcglobal:cbv:mda#description": "Albania"
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

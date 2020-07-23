@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorator="layouts/default">
+
+<script type="text/javascript" layout:fragment="custom-script" th:inline="javascript">
+    function createValidationResultMessage(result) {
+        if (result.isValidated == false)
+            return null;
+        return "EventData: " + result.eventDataCount + " , Vocabularies: "
+            + result.vocabularyCount + " , VocabularyElements: "
+            + result.vocabularyElementCount;
+    }
+
+    $(document)
+        .ready(
+            function() {
+                // Loading a selected example to the text area
+                $(".dropdown-menu")
+                    .on(
+                        "click",
+                        "li a",
+                        function(event) {
+                            $("#xmlTextArea")
+                                .load(
+                                    $(this)[0].id,
+                                    function() {
+                                        var docValURL = $(
+                                            "#docValURL")
+                                            .val();
+
+                                        var masterDocValURL = $(
+                                            "#masterDocValURL")
+                                            .val();
+                                        var valXMLString = $(
+                                            "#xmlTextArea")
+                                            .val();
+                                        var accessToken = [[${session.accessToken}]] ;
+                                        $.ajaxSetup({
+                                            headers:{
+                                                'Authorization': accessToken
+                                            }
+                                        });
+                                        $
+                                            .ajax(
+                                                {
+                                                    type : "POST",
+                                                    url : docValURL,
+                                                    data : valXMLString,
+                                                    contentType : "application/xml; charset=utf-8"
+                                                })
+                                            .done(
+                                                function(
+                                                    result) {
+                                                    var msg = createValidationResultMessage(result);
+                                                    $(
+                                                        "#docValResp")
+                                                        .val(
+                                                            msg)
+                                                        .hide()
+                                                        .fadeIn(
+                                                            'slow');
+                                                })
+                                            .error(
+                                                function(
+                                                    result) {
+                                                    $(
+                                                        "#docValResp")
+                                                        .val(
+                                                            result.responseText)
+                                                        .hide()
+                                                        .fadeIn(
+                                                            'slow');
+                                                });
+                                        var accessToken = [[${session.accessToken}]] ;
+                                        $.ajaxSetup({
+                                            headers:{
+                                                'Authorization': accessToken
+                                            }
+                                        });
+
+                                        $
+                                            .ajax(
+                                                {
+                                                    type : "POST",
+                                                    url : masterDocValURL,
+                                                    data : valXMLString,
+                                                    contentType : "application/xml; charset=utf-8"
+                                                })
+                                            .done(
+                                                function(
+                                                    result) {
+                                                    var msg = createValidationResultMessage(result);
+                                                    $(
+                                                        "#masterDocValResp")
+                                                        .val(
+                                                            msg)
+                                                        .hide()
+                                                        .fadeIn(
+                                                            'slow');
+                                                })
+                                            .error(
+                                                function(
+                                                    result) {
+                                                    $(
+                                                        "#masterDocValResp")
+                                                        .val(
+                                                            result.responseText)
+                                                        .hide()
+                                                        .fadeIn(
+                                                            'slow');
+                                                });
+                                    });
+                        })
+                $('#captureURL').val(
+                    'http://' + location.host
+                    + '/Service/IntelligentVocabularyCapture');
+                $('#docValURL')
+                    .val(
+                        'http://'
+                        + location.host
+                        + '/Service/EPCISDocumentValidation');
+                $('#masterDocValURL')
+                    .val(
+                        'http://'
+                        + location.host
+                        + '/Service/EPCISMasterDataDocumentValidation');
+
+                $('#xmlTextArea')
+                    .on(
+                        'paste',
+                        function(d) {
+                            var docValURL = $("#docValURL")
+                                .val();
+                            var masterDocValURL = $(
+                                "#masterDocValURL").val();
+                            var valXMLString = d.originalEvent.clipboardData
+                                .getData('text');
+                            var accessToken = [[${session.accessToken}]] ;
+                            $.ajaxSetup({
+                                headers:{
+                                    'Authorization': accessToken
+                                }
+                            });
+
+                            $
+                                .ajax(
+                                    {
+                                        type : "POST",
+                                        url : docValURL,
+                                        data : valXMLString,
+                                        contentType : "application/xml; charset=utf-8"
+                                    })
+                                .done(
+                                    function(result) {
+                                        var msg = createValidationResultMessage(result);
+                                        $("#docValResp")
+                                            .val(
+                                                msg)
+                                            .hide()
+                                            .fadeIn(
+                                                'slow');
+                                    })
+                                .error(
+                                    function(result) {
+                                        createValidationResultMessage(result);
+                                        $("#docValResp")
+                                            .val(
+                                                result.responseText)
+                                            .hide()
+                                            .fadeIn(
+                                                'slow');
+                                    });
+                            var accessToken = [[${session.accessToken}]] ;
+                            $.ajaxSetup({
+                                headers:{
+                                    'Authorization': accessToken
+                                }
+                            });
+
+                            $
+                                .ajax(
+                                    {
+                                        type : "POST",
+                                        url : masterDocValURL,
+                                        data : valXMLString,
+                                        contentType : "application/xml; charset=utf-8"
+                                    })
+                                .done(
+                                    function(result) {
+                                        var msg = createValidationResultMessage(result);
+                                        $(
+                                            "#masterDocValResp")
+                                            .val(
+                                                msg)
+                                            .hide()
+                                            .fadeIn(
+                                                'slow');
+                                    })
+                                .error(
+                                    function(result) {
+                                        createValidationResultMessage(result);
+                                        $(
+                                            "#masterDocValResp")
+                                            .val(
+                                                result.responseText)
+                                            .hide()
+                                            .fadeIn(
+                                                'slow');
+                                    });
+                        });
+            });
+
+    function capture() {
+        var captureURL = $("#captureURL").val();
+        var captureXMLString = $("#xmlTextArea").val();
+        var accessToken = [[${session.accessToken}]] ;
+        $.ajaxSetup({
+            headers:{
+                'Authorization': accessToken
+            }
+        });
+
+        $.ajax({
+            type : "POST",
+            url : captureURL,
+            data : captureXMLString,
+            contentType : "application/xml; charset=utf-8"
+        }).done(function(result) {
+            $("#resp").val(result).hide().fadeIn('slow');
+        }).error(function(result) {
+            $("#resp").val(result.responseText).hide().fadeIn('slow');
+        });
+    }
+
+    function replaceURL(type) {
+        if (type == "event") {
+            var str = $("#captureURL").val();
+            str = str.replace("IntelligentVocabulary", "Event");
+            str = str.replace("ECReport", "Event");
+            str = str.replace("JSONProductionProcTemplate", "Event");
+            $("#captureURL").val(str);
+        } else if (type == "vocabulary") {
+            var str = $("#captureURL").val();
+            str = str.replace("Event", "IntelligentVocabulary");
+            str = str.replace("ECReport", "IntelligentVocabulary");
+            str = str.replace("JSONProductionProcTemplate", "IntelligentVocabulary");
+            $("#captureURL").val(str);
+        } else if (type == "ecreport") {
+            var str = $("#captureURL").val();
+            str = str.replace("Event", "ECReport");
+            str = str.replace("IntelligentVocabulary", "ECReport");
+            str = str.replace("JSONProductionProcTemplate", "ECReport");
+            $("#captureURL").val(str);
+        } else if (type == "procTemplate") {
+            var str = $("#captureURL").val();
+            str = str.replace("Event", "JSONProductionProcTemplate");
+            str = str.replace("IntelligentVocabulary", "JSONProductionProcTemplate");
+            str = str.replace("ECReport", "JSONProductionProcTemplate");
+            $("#captureURL").val(str);
+        }
+
+    }
+
+    function movePage(page) {
+        document.location.href = page;
+    }
+</script>
+
+<body>
+    <div layout:fragment="content">
+        <div class="panel panel-info">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed"
+                        data-toggle="collapse" data-target="#navbar" aria-expanded="false"
+                        aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span> <span
+                        class="icon-bar"></span> <span class="icon-bar"></span> <span
+                        class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">EPCIS Master Capture Client</a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <form class="navbar-form navbar-right">
+                    <button type="button" class="btn btn-success"
+                            onclick="movePage('/home')">Back</button>
+                </form>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-4">
+                        <h4>EPCIS Master Capture URL (Change IP or Domain if needed)</h4>
+                        <input id="captureURL" type="text" class="form-control"
+                            value="http://localhost:8099/Service/IntelligentVocabularyCapture"
+                            placeholder="http://localhost:8099/Service/IntelligentVocabularyCapture" />
+                        <h4>Master Capture</h4>
+                        <button type="button" class="btn btn-success" onclick="capture()">Capture</button>
+                        <input id="resp" type="text" class="form-control" disabled="disabled"
+                               placeholder="Capture Server Response" />
+                        <h4>Validation Service</h4>
+                        <input id="masterDocValURL" type="text" class="form-control"
+                               value="http://localhost:8099/Service/EPCISMasterDataDocumentValidation"
+                               placeholder="http://localhost:8099/Service/EPCISMasterDataDocumentValidation" />
+                        <input id="masterDocValResp" type="text" class="form-control" disabled="disabled"
+                               placeholder="Validation result against EPCISMasterDataDocument schema" />
+                    </div>
+                    <div class="col-sm-8">
+                        <h4>HTTP.POST Body</h4>
+                        <div class="dropdown">
+                            <button class="btn btn-default dropdown-toggle" type="button"
+                                    id="dropData" data-toggle="dropdown" aria-haspopup="true"
+                                    aria-expanded="true">
+                                Loading an example<span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                                <li class="dropdown-header">Master Data Examples</li>
+                                <li><a id="./exampleXML/gs1example5(Master).xml" th:href="@{${currentUrl}} + '#'">GS1
+                                    Example 5 [EPCIS v1.2 section 9.8]</a></li>
+                                <li><a
+                                        id="./CoreBusinessVocabulary/CoreBusinessVocabulary.xml"
+                                        th:href="@{${currentUrl}} + '#'">Electronic CBV</a></li>
+                                <li class="dropdown-header">ECReport Example</li>
+                                <li><a id="./exampleXML/ECReportExample1.xml" th:href="@{${currentUrl}} + '#'">ECReport
+                                    Example 1</a></li>
+                            </ul>
+                        </div>
+                        <textarea id="xmlTextArea" class="form-control auto-text-area"
+                                  rows="14"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <td>Method Name</td>
+                        <td>Description</td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><button type="button" class="btn btn-info">Vocabulary Capture</button></td>
+                        <td>
+                            <ul class="list-group">
+                                <li class="list-group-item">This service allows you to
+                                    store your EPCIS Document into your backend storage</li>
+                                <li class="list-group-item">Method: post</li>
+                                <li class="list-group-item">Contents: application/xml,
+                                    complying with <a href="/wsdl/EPCglobal-epcis-1_2.xsd">EPCIS
+                                        v1.2 XML Schema</a>
+                                </li>
+                                <li class="list-group-item">URL Format: <br />
+                                    http://{base-url}:{base-port}/Service/VocabularyCapture <br />
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div layout:fragment="custom-footer">
+        &copy; BIBA 2019; Auto-ID Labs, KAIST 2017
+    </div>
+</body>
+</html>

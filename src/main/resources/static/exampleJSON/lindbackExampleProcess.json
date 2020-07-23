@@ -1,0 +1,37 @@
+{
+  "productClass": "lindbacks_test",
+  "productionProcessTemplate": [
+    {
+      "id": "1",
+      "hasPrev": "",
+      "readPoint": "urn:epc:id:sgln:readPoint.lindbacks.1",
+      "bizLocation": "urn:epc:id:sgln:bizLocation.lindbacks.2",
+      "bizStep": "urn:epcglobal:cbv:bizstep:other",
+      "hasNext": "2"
+    },
+    {
+      "id": "2",
+      "hasPrev": "1",
+      "readPoint": "urn:epc:id:sgln:readPoint.lindbacks.2",
+      "bizLocation": "urn:epc:id:sgln:bizLocation.lindbacks.3",
+      "bizStep": "urn:epcglobal:cbv:bizstep:installing",
+      "hasNext": "3"
+    },
+    {
+      "id": "3",
+      "hasPrev": "2",
+      "readPoint": "urn:epc:id:sgln:readPoint.lindbacks.3",
+      "bizLocation": "urn:epc:id:sgln:bizLocation.lindbacks.4",
+      "bizStep": "urn:epcglobal:cbv:bizstep:entering_exiting",
+      "hasNext": "4"
+    },
+    {
+      "id": "4",
+      "hasPrev": "3",
+      "readPoint": "urn:epc:id:sgln:readPoint.lindbacks.4",
+      "bizLocation": "urn:epc:id:sgln:bizLocation.lindbacks.5",
+      "bizStep": "urn:epcglobal:cbv:bizstep:shipping",
+      "hasNext": ""
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+build:
+  artifactId: '@project.artifactId@'
+  timestamp: '@timestamp@'
+  version: '@project.version@'
+server:
+  max-http-header-size: 1048576
+  #servlet-path: /Service/*
+  port: ${PORT:8080}
+
+#  tomcat:
+#    max-connections: 3000
+#    max-http-post-size: 1048576
+#    max-threads: 1000
+spring:
+  application:
+    # the name of the application represents the global identifier of this microservice.
+    name: epcis-company-service
+  cloud:
+    config:
+      uri: ${CONFIG_SERVER_URI:http://localhost:8888}
+      # failFast is disabled per default, so that the service can start standalone without config server.
+      # failFast should be enabled in production environments.
+      # it can be set via an environment variable or the config server
+      failFast: ${CONFIG_SERVER_FAILFAST:false}
+    discovery:
+      # by disabling the service discovery the application/service can be started in "standalone mode".
+      # service discovery is disabled by default and should be enabled (set to true) for the "cloud mode".
+      # it can be set via an environment variable or the config server
+      enabled: ${discovery.enabled:${DISCOVERY_ENABLED:false}}
+  jackson:
+    date-format: com.fasterxml.jackson.databind.util.ISO8601DateFormat
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
+  cache:
+    cache-names: token
+    caffeine:
+      spec: initialCapacity=50,maximumSize=500,expireAfterWrite=3600s
+  data:
+    mongodb:
+      database: ${EPCIS_DB_NAME:epcis}
+      ssl: ${EPCIS_DB_SSL:false}
+      uri: ${EPCIS_DB_URL:mongodb://localhost:27017/} 
+  identity-service:
+    url: ${IDENTITY_SERVER_URI:http://nimble-staging.salzburgresearch.at:80/identity}
+springfox:
+  documentation:
+    swagger:
+      v2:
+        path: /api-docs
+nimble:
+  platformHost: ${EPCIS_SERVICE_URL:http://localhost:8080}
+epcis:
+  capture:
+    verification: true   
+data-replication:
+  remote_nimble_epcis_server: 
+    enabled: ${DATA_REPLICATE_REMOTE_EPCIS:false}
+    url: ${REMOTE_EPCIS_SERVICE_URL:http://localhost:8099/}
+    username: ${NIMBLE_USERNAME:xx}
+    password: ${NIMBLE_PASSWORD:xx}
+    # AfFor example, in default, the following url will be called for a simple event query: 
+    # http://localhost:8119/Service/Poll/SimpleEventQuery?MATCH_epc=xx 
+  blockchain:
+    enable: ${DATA_REPLICATE_BLOCKCHAIN:false}
+    url: ${BLOCKCHAIN_RFID_CAPTURE_URL:http://161.156.70.125:5000/rfid}
+    # for adding RFID event into the BC network you need to send a post request as follows:
+    # curl -H "Content-Type:application/json" -X POST -d @sample.json http://161.156.70.125:5000/events
+
+credential:
+  username: ${EPCIS_COMPANY_USERNAME:user1,user2}
+  password: ${EPCIS_COMPANY_PASSWORD:pass1,pass2}
+  accessToken: ${EPCIS_COMPANY_TOKEN:token1,token2}
+#Credential
+#For credential we use username, password and accessToken. It works sequentially like for
+#username: user1 the password is: pass1 and the accessToken is token1.
+
+#GUI
+#GUI application we are using only username and password, after login the accessToken automatically detect by application.
+
+#API
+#API application we need only accessToken and when you sent get or post request, you need to use Authorization key and the value
+#The value of the Authorization is our accessToken value.
+#Example. Authorization: token1
+
+test:
+  base-url: ${EPCIS_TEST_BASE_URL:http://localhost:8080}
+  accessToken: ${EPCIS_TEST_TOKEN:token1}
+#Set up your base-url and accessToken here for testing.

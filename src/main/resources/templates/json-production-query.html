@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorator="layouts/default">
+
+<script type="text/javascript" layout:fragment="custom-script" th:inline="javascript">
+    /*<![CDATA[*/
+    $(document).ready(function() {
+        $('#pollBaseURL').val("http://"+location.host+"/Service/GetProductionProcessTemplate/{productClass}");
+        $('#getNamedEventQueries').val("http://"+location.host+"/epcis/Service/Admin/NamedEventQuery");
+    });
+
+    function poll() {
+        var baseURL = $("#pollBaseURL").val();
+        var accessToken = [[${session.accessToken}]] ;
+        $.ajaxSetup({
+            headers:{
+                'Authorization': accessToken
+            }
+        });
+        $.get(
+            baseURL,
+            function(ret) {
+                console.log(ret);
+
+                if (typeof ret == 'object') {
+                    try {
+                        $("#xmlTextArea").val(
+                            (new XMLSerializer())
+                                .serializeToString(ret)).hide()
+                            .fadeIn();
+                    } catch (e) {
+                        $("#xmlTextArea").val(
+                            JSON.stringify(ret, null, '\t')).hide()
+                            .fadeIn();
+                    }
+                } else {
+                    $("#xmlTextArea").val(ret).hide().fadeIn();
+                }
+            }).fail(function(e) {
+            $("#xmlTextArea").val(e.responseText).hide().fadeIn();
+        });
+    }
+
+    function getNamedEventQueries() {
+        var url = $("#getNamedEventQueries").val();
+        $.get(url, function(ret) {
+            $("#xmlTextArea").val(JSON.stringify(ret));
+        }).fail(function(e) {
+            $("#xmlTextArea").val(e.responseText).hide().fadeIn();
+        });
+    }
+
+    function movePage(page) {
+        document.location.href = page;
+    }
+
+    function reset(){
+        $('#pollParam').val('');
+    }
+    /*]]>*/
+</script>
+
+<body>
+    <div layout:fragment="content">
+        <div class="panel panel-info">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed"
+                        data-toggle="collapse" data-target="#navbar" aria-expanded="false"
+                        aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span> <span
+                        class="icon-bar"></span> <span class="icon-bar"></span> <span
+                        class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">NIMBLE Production Process Template Query Client</a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <form class="navbar-form navbar-right">
+                    <button type="button" class="btn btn-success"
+                            onclick="movePage('/home')">Back</button>
+                </form>
+            </div>
+
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-4">
+                        <h4>NIMBLE Production Process Template Query URL (Change IP or Domain if needed) (HTTP.GET)</h4>
+                        <input id="pollBaseURL" type="text" class="form-control"
+                               value="http://localhost:8080/epcis/Service/Poll/SimpleEventQuery?"
+                               placeholder="http://localhost:8080/epcis/Service/Poll/SimpleEventQuery" />
+                        <button type="button" class="btn btn-info" onclick="poll()">Production Process Template Query</button>
+                        <br />
+                    </div>
+                    <div class="col-sm-8">
+                        <h4>Query Response</h4>
+                        <textarea id="xmlTextArea" class="form-control auto-text-area"
+                                  rows="16"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-body">
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <td>Method Name</td>
+                        <td>Description</td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>GetProductionProcessTemplate</td>
+                        <td>
+                            <ul class="list-group">
+                                <li class="list-group-item">Return production process template stored in the company repository in interest immediately</li>
+                                <li class="list-group-item"><code>HTTP.GET</code><br />URL:
+                                    http://{base-url}:{base-port}/Service/GetProductionProcessTemplate/{productClass}</li>
+                                <li class="list-group-item">Parameters: <br />
+                                    {productClass} : The product class ID. Product class means the product uploaded in the NIMBLE catalogue.
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div layout:fragment="custom-footer">
+        &copy;BIBA 2019
+    </div>
+</body>
+</html>

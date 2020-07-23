@@ -1,0 +1,26 @@
+{
+    "epcismd": {
+        "EPCISBody": {
+            "VocabularyList": [
+                {
+                    "Vocabulary": {
+                        "id": "401",
+                        "type": "urn:epcglobal:epcis:vtype:SubSiteAttribute",
+                        "attributes": {
+                            "urn:epcglobal:cbv:mda#description": "Electronics"
+                        }
+                    }
+                }, 
+                {
+                    "Vocabulary": {
+                        "id": "402",
+                        "type": "urn:epcglobal:epcis:vtype:SubSiteAttribute",
+                        "attributes": {
+                            "urn:epcglobal:cbv:mda#description": "Cold storage"
+                        }
+                    }  
+                }
+            ]
+        }
+    }
+}

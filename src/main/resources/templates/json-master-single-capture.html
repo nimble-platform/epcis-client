@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorator="layouts/default">
+
+<div layout:fragment="custom-css-file">
+    <link rel="stylesheet"  type="text/css" th:href="@{/css/simplePagination.css}" />
+</div>
+
+<style layout:fragment="custom-css">
+    .container {
+        font-family: monospace;
+    }
+    .clear {
+        clear: both;
+    }
+    .mtop25 {
+        margin-top: 25px;
+    }
+    .table {
+        margin-bottom: 0px;
+    }
+    .m-left-20 {
+        margin-left: -20px;
+    }
+    .border-none {
+        border: none;
+    }
+    .m-bottom-0 {
+        margin-bottom: 0px;
+    }
+</style>
+
+<div layout:fragment="custom-script-file">
+    <script type="text/javascript" th:src="@{/js/jquery.simplePagination.js}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
+</div>
+
+
+<script type="text/javascript" layout:fragment="custom-script" th:inline="javascript">
+    /*<![CDATA[*/
+    $('document').ready(function(){
+        function movePage(page) {
+            document.location.href = page;
+        }
+
+        function getHiddenClass(hidden) {
+            return hidden == true ? "hidden" : "";
+        }
+
+        function getAttributeTemplate(key = '', value = '', hidden = false, firstHideDelete = false) {
+            return '<div class="form-group attribute">'+
+                '<div class="col-sm-5">'+
+                '<input name="attributes" type="text" class="form-control attributes-name" value = "'+ key +'" placeholder="Attribute" required="required" />'+
+                '</div>'+
+                '<div class="col-sm-5">'+
+                '<input name="a_values" type="text" class="form-control attributes-value" value="'+ value +'" placeholder="Value" required="required" />'+
+                '</div>'+
+                '<div class="col-sm-1 m-left-20">'+
+                '<button type="button" class="btn btn-default attributeDel '+ getHiddenClass(firstHideDelete) +'" >'+
+                '<span class="glyphicon glyphicon-trash"></span>'+
+                '</button>'+
+                '</div>'+
+                '<div class="col-sm-1">'+
+                '<button type="button" class="btn btn-default '+ getHiddenClass(hidden) +'" id="addAttribute">'+
+                '<span class="glyphicon glyphicon-plus"></span>'+
+                '</button>'+
+                '</div>'+
+                '</div>'
+        }
+
+        function removeDeleteButton($attributes) {
+            $attributes.each(function(i, obj) {
+                $addAttribute = $(this).find('#addAttribute');
+                if(i!=$attributes.length-1) {
+                    $addAttribute.addClass('hidden');
+                } else {
+                    $(this).find('#addAttribute').removeClass('hidden');
+                }
+            });
+            if($attributes.length==1) {
+                $attributes.find('.attributeDel').addClass('hidden');
+            } else {
+                $attributes.find('.attributeDel').removeClass('hidden');
+            }
+        }
+
+        $(document).on("click", "#addAttribute", function () {
+            $attributeList = $(this).parents('.attributeList');
+            $attributeList.append(getAttributeTemplate());
+            $attributes = $attributeList.find('.attribute');
+            removeDeleteButton($attributes);
+        });
+
+        $(document).on("click", ".attributeDel", function (event) {
+            $attributeList = $(this).parents('.attributeList');
+            $(this).closest(".attribute").remove();
+            $attributes = $attributeList.find('.attribute');
+            removeDeleteButton($attributes);
+        });
+
+        let $businessLocationAttribute = [
+            'urn:epcglobal:cbv:mda#name',
+            'ciurn:epcglobal:cbv:mda#city',
+            'urn:epcglobal:cbv:mda#streetAddressOne',
+            'urn:epcglobal:cbv:mda#countryCode',
+            'urn:epcglobal:cbv:mda:site',
+            'urn:epcglobal:cbv:mda:sst',
+            'urn:epcglobal:cbv:mda:ssa',
+            'urn:epcglobal:cbv:mda:ssd'
+        ];
+
+        let $otherAttribute = [
+            'urn:epcglobal:cbv:mda#description'
+        ];
+
+        $(document).on("change", "#attributeType", function() {
+            $attributeValue = $(this).val();
+            $('.attributeList').empty();
+            if($attributeValue == "urn:epcglobal:epcis:vtype:BusinessLocation" || $attributeValue == "urn:epcglobal:epcis:vtype:ReadPoint") {
+                var count = 1;
+                $businessLocationAttribute.forEach(function(index, value){
+                    var hidden = true;
+                    if($businessLocationAttribute.length == count) {
+                        hidden = false;
+                    }
+                    $('.attributeList').append(getAttributeTemplate(index,"",hidden));
+                    count++;
+                });
+            } else {
+                $otherAttribute.forEach(function(index, value){
+                    $('.attributeList').append(getAttributeTemplate(index,"",false));
+                });
+            }
+            $(".childList").empty();
+            $(".childList").append(getChildTemplate("","",true));
+        });
+
+        function getChildLabel(label) {
+            return label == true ? "Child" : "";
+        }
+        function getChildTemplate(value = '', hidden = false, label = false) {
+            return '<div class="form-group child">'+
+                '<label class="col-sm-1 control-label">'+ getChildLabel(label) +'</label>'+
+                '<div class="col-sm-9">'+
+                '<input name="childrens" type="text" class="form-control childrens-name"  value="'+ value +'" placeholder="urn:epc:id:sgln:B1" />'+
+                '</div>'+
+                '<div class="col-sm-1 m-left-20">'+
+                '<button type="button" class="btn btn-default childDel '+ getHiddenClass(label) +'">'+
+                '<span class="glyphicon glyphicon-trash"></span>'+
+                '</button>'+
+                '</div>'+
+                '<div class="col-sm-1">'+
+                '<button type="button" class="btn btn-default '+ getHiddenClass(hidden) +'" id="addChild">'+
+                '<span class="glyphicon glyphicon-plus"></span>'+
+                '</button>'+
+                '</div>'+
+                '</div>'
+        }
+
+        $(document).on("click", "#addChild", function () {
+            $childList = $(this).parents('.childList');
+            $childList.append(getChildTemplate());
+            $(this).addClass('hidden');
+        });
+
+        $(document).on("click", ".childDel", function (event) {
+            $childList = $(this).parents('.childList');
+            $(this).closest(".child").remove();
+            $childrens = $childList.find('.child');
+            $childrens.each(function(i, obj) {
+                if(i==$childrens.length-1) {
+                    $(this).find('#addChild').removeClass('hidden');
+                }
+            });
+        });
+
+        function getMasterDataJsonFormat(vocabulary) {
+            return masterData =  {
+                epcismd: {
+                    EPCISBody: {
+                        VocabularyList: [
+                            {
+                                Vocabulary: vocabulary
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        function showAjaxResponseMessage(data) {
+            $.each(data, function(i, v){
+                if(i == 'responseText'){
+                    Swal.fire({
+                        type: 'error',
+                        title: 'Oops...',
+                        text: v
+                    });
+                }
+            });
+        }
+
+        $("#addMasterDataSubmit").on('click', function() {
+            var attributes = {};
+            var childrens = [];
+            var vocabulary = {};
+            var idValue = $("[name='id']").val();
+            if(idValue != '') {
+                vocabulary['id'] = idValue;
+            }
+            var typeValue = $("[name='type']").val();
+            if(typeValue != '') {
+                vocabulary['type'] = typeValue;
+            }
+            $('.attributes-name').each(function(){
+                var attributeValue = $(this).parent().next().find('.attributes-value').val();
+                if(attributeValue != '') {
+                    attributes[$(this).val()] = attributeValue;
+                };
+            });
+            if(!jQuery.isEmptyObject(attributes)) {
+                vocabulary['attributes'] = attributes;
+            }
+            $('.childrens-name').each(function(i,v){
+                var childrenValue = $(this).val();
+                if(childrenValue != '') {
+                    childrens[i] = childrenValue;
+                };
+            });
+            if(!jQuery.isEmptyObject(childrens)) {
+                vocabulary['childrens'] = childrens;
+            }
+
+            var masterData = getMasterDataJsonFormat(vocabulary);
+            masterDataCaptureUrl = 'http://' + location.host + '/Service/IntelligentJSONMasterCapture';
+            var accessToken = [[${session.accessToken}]] ;
+            $.ajaxSetup({
+                headers:{
+                    'Authorization': accessToken
+                }
+            });
+            $.ajax({
+                type: "POST",
+                url: masterDataCaptureUrl,
+                contentType: 'application/json',
+                data: JSON.stringify(masterData),
+                success: function(data){
+                    $('#masterDataModal').modal('hide');
+                    getMasterData(getMasterDataUrl);
+                },
+                error: function(data) {
+                    showAjaxResponseMessage(data);
+                }
+            });
+        });
+
+        function toDate(date) {
+            if (date === void 0) {
+                return new Date(0);
+            }
+            if (isDate(date)) {
+                return date;
+            } else {
+                return new Date(parseFloat(date.toString()));
+            }
+        }
+
+        function isDate(date) {
+            return (date instanceof Date);
+        }
+
+        function format(date, format) {
+            return moment(date).format(format);
+        }
+
+        function getAttributeItem(item) {
+            return '<tr class="attribute-tr">'+
+                '<td>'+
+                '<button type="button" class="btn btn-default btn-xs" id="deleteMasterDataItem">'+
+                '<span class="glyphicon glyphicon-trash"></span>'+
+                '</button>'+
+                '<button type="button" class="btn btn-default btn-xs" id="updateMasterDataItemInfo">'+
+                '<span class="glyphicon glyphicon-pencil"></span>'+
+                '</button>'+
+                '<button type="button" id="getMasterDataItemInfo" class="btn btn-default btn-xs">'+
+                '<span class="glyphicon glyphicon-info-sign"></span>'+
+                '</button>'+
+                '</td>'+
+                '<td>'+ item.type +'</td>'+
+                '<td>'+ item.id +'</td>'+
+                '<td>'+ format(item.lastUpdated.$date, "YYYY-MM-DD HH:mm:ss")  +'</td>'+
+                '<td class="hidden">' + item._id.$oid +'</td>'+
+                '</tr>'
+        }
+
+        var getMasterDataUrl = "http://" + location.host + "/Service/Poll/SimpleMasterDataQuery?includeAttributes=true&includeChildren=true&masterDataFormat=JSON";
+        function getMasterData(url) {
+            $("#attributeListBody").html('');
+            var accessToken = [[${session.accessToken}]] ;
+            $.ajaxSetup({
+                headers:{
+                    'Authorization': accessToken
+                }
+            });
+            $.getJSON( url, function( data ) {
+                $.each( data, function( key, val ) {
+                    $("#attributeListBody").append(getAttributeItem(val));
+                });
+            })
+        }
+        getMasterData(getMasterDataUrl);
+
+        var getMasterDataItemUrl = 'http://' + location.host + '/Service/GetMasterDataItem';
+        $(document).on("click", "#getMasterDataItemInfo", function (event) {
+            var itemID = $(this).parent().next().next().next().next().text();
+            $("#masterDataItemInfoModalBody").empty();
+            var accessToken = [[${session.accessToken}]] ;
+            $.ajaxSetup({
+                headers:{
+                    'Authorization': accessToken
+                }
+            });
+            $.ajax({
+                url: getMasterDataItemUrl,
+                type: "GET", //send it through get method
+                data: {
+                    id: itemID,
+                },
+                success: function(data) {
+                    if(data.type != '') {
+                        $("#masterDataItemInfoModalBody").append(
+                            '<div class="form-group">'+
+                            '<label class="col-sm-1 control-label">Type</label>'+
+                            '<div class="col-sm-11">' +
+                            '<p class="form-control border-none m-bottom-0">' + data.type + '</p>'+
+                            '</div>'+
+                            '</div>'
+                        );
+                    }
+
+                    if(data.id != '') {
+                        $("#masterDataItemInfoModalBody").append(
+                            '<div class="form-group">'+
+                            '<label class="col-sm-1 control-label">ID</label>'+
+                            '<div class="col-sm-11">' +
+                            '<p class="form-control border-none m-bottom-0">' + data.id + '</p>'+
+                            '</div>'+
+                            '</div>'
+                        );
+                    }
+
+                    if(data.hasOwnProperty("attributes")) {
+                        var attributes = data.attributes;
+                        $("#masterDataItemInfoModalBody").append(
+                            '<div class="form-group">'+
+                            '<div class="col-sm-6"><strong>Attributes</strong></div>'+
+                            '<div class="col-sm-6"><strong>Value</strong></div>'+
+                            '</div>'
+                        );
+                        $.each( attributes, function( key, val ) {
+                            if(key != "lastUpdated"){
+                                $("#masterDataItemInfoModalBody").append(
+                                    '<div class="form-group">'+
+                                    '<div class="col-sm-6">'+ key +'</div>'+
+                                    '<div class="col-sm-6">' + val + '</div>'+
+                                    '</div>'
+                                );
+                            }
+                        });
+                    }
+
+                    if(data.hasOwnProperty("childrens")) {
+                        var childrens = data.childrens;
+                        $("#masterDataItemInfoModalBody").append(
+                            '<div class="form-group">'+
+                            '<div class="col-sm-12"><strong>Children</strong></div>'+
+                            '</div>'
+                        );
+                        $.each( childrens, function( key, val ) {
+                            $("#masterDataItemInfoModalBody").append(
+                                '<div class="form-group">'+
+                                '<div class="col-sm-1"></div>'+
+                                '<div class="col-sm-11">'+ val +'</div>'+
+                                '</div>'
+                            );
+                        });
+                    }
+
+                    $('#masterDataItemInfoModal').modal('show');
+                },
+                error: function(xhr) {
+                    //Do Something to handle error
+                }
+            });
+        });
+
+        var masterDataItemTypes = {
+            "urn:epcglobal:epcis:vtype:ReadPoint" : "ReadPoindID",
+            "urn:epcglobal:epcis:vtype:BusinessLocation" : "BusinessLocationID",
+            "urn:epcglobal:epcis:vtype:BusinessStep" : "BusinessStepID",
+            "urn:epcglobal:epcis:vtype:Disposition" : "DispositionID",
+            "urn:epcglobal:epcis:vtype:BusinessTransaction" : "BusinessTransaction",
+            "urn:epcglobal:epcis:vtype:BusinessTransactionType" : "BusinessTrasactionTypeID",
+            "urn:epcglobal:epcis:vtype:EPCClass" : "EPCClass",
+            "urn:epcglobal:epcis:vtype:SourceDestType" : "SourceDestTypeID",
+            "urn:epcglobal:epcis:vtype:SourceDest" : "SourceDestID",
+            "urn:epcglobal:epcis:vtype:Location" : "LocationID",
+            "urn:epcglobal:epcis:vtype:ErrorReason" : "ErrorReasonID",
+            "urn:epcglobal:epcis:vtype:CountryCode" : "CountryCodeID",
+            "urn:epcglobal:epcis:vtype:SubSiteAttribute" : "SubSiteAttributeID",
+            "urn:epcglobal:epcis:vtype:SubSiteType" : "SubSiteTypeID"
+        };
+
+        function getSelected(index, type) {
+            return index == type ? "selected" : "";
+        }
+
+        $(document).on("click", "#deleteMasterDataItem", function (event) {
+            var itemID = $(this).parent().next().next().text();
+
+            $("#masterDataItemDeleteModalBody").empty();
+            $("#masterDataItemDeleteModalBody").append(
+                '<p>Do you really want to delete all these records for Id: '+ itemID +' ?</p>'
+            );
+            $("#masterDataItemDeleteModalBody").append(
+                '<input name="id" type="hidden" value="' + itemID + '" required="required" />'
+            );
+            $('#deleteMasterDataModal').modal('show');
+        });
+
+        $(document).on("click", "#deleteMasterDataSubmit", function(e) {
+            $('#deleteMasterDataModal').modal('hide');
+            $deleteMasterData = $("#deleteMasterDataForm").serializeArray();
+            itemID = $deleteMasterData[0]['value'];
+            deleteMasterDataUrl = 'http://' + location.host + '/Service/deleteMasterDataItemById';
+            var accessToken = [[${session.accessToken}]] ;
+            $.ajaxSetup({
+                headers:{
+                    'Authorization': accessToken
+                }
+            });
+
+            $.ajax({
+                type: "POST",
+                url: deleteMasterDataUrl,
+                data: {
+                    id: itemID
+                },
+                success: function(data){
+                    Swal.fire({
+                        position: 'top-end',
+                        type: 'success',
+                        title: 'Successfully Deleted!',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                    getMasterData(getMasterDataUrl);
+                },
+                error: function(data) {
+                    showAjaxResponseMessage(data);
+                }
+            });
+        });
+
+        $(document).on("click", "#updateMasterDataItemInfo", function (event) {
+            var itemID = $(this).parent().next().next().next().next().text();
+            $("#masterDataItemInfoUpdateModalBody").empty();
+            var accessToken = [[${session.accessToken}]] ;
+            $.ajaxSetup({
+                headers:{
+                    'Authorization': accessToken
+                }
+            });
+            $.ajax({
+                url: getMasterDataItemUrl,
+                type: "GET", //send it through get method
+                data: {
+                    id: itemID,
+                },
+                success: function(data) {
+                    if(data.type != '') {
+                        var options = new Array();
+                        options.push('<option value="" >-- Select a type --</option>');
+                        $.each(masterDataItemTypes, function(index, option) {
+                            options.push('<option value="' + index + '" '+ getSelected(index, data.type) +'>'+ option +'</option>');
+                        });
+                        $("#masterDataItemInfoUpdateModalBody").append(
+                            '<div class="form-group">'+
+                            '<label class="col-sm-1 control-label">Type</label>'+
+                            '<div class="col-sm-10">'+
+                            '<select name="type" class="form-control" id="attributeType" required="required">'+
+                            options.join("") +
+                            '</select>'+
+                            '</div>'+
+                            '<div class="col-sm-1"></div>'+
+                            '</div>'
+                        );
+                    }
+
+                    if(data.id != '') {
+                        $("#masterDataItemInfoUpdateModalBody").append(
+                            '<div class="form-group">'+
+                            '<label class="col-sm-1 control-label">ID</label>'+
+                            '<div class="col-sm-10">'+
+                            '<input name="id" type="text" value="' + data.id + '" class="form-control" placeholder="urn:epc:id:sgln:B1" required="required" />'+
+                            '</div>'+
+                            '<div class="col-sm-1"></div>'+
+                            '</div>'
+                        );
+                    }
+
+                    if(data.hasOwnProperty("attributes")) {
+                        var attributes = data.attributes;
+                        var attributeList = new Array();
+                        attributeList.push('<div class="attributeList">');
+                        var attributeLenght = Object.keys(attributes).length
+                        var count = 1;
+                        $.each(attributes, function(index, value) {
+                            var hidden = true;
+                            if(attributeLenght == count) {
+                                hidden = false;
+                            }
+                            var firstHideDelete = false;
+                            if(attributeLenght == 1) {
+                                firstHideDelete = true;
+                            }
+                            if(index != "lastUpdated") {
+                                attributeList.push(getAttributeTemplate(index, value, hidden, firstHideDelete));
+                            }
+                            count++;
+                        });
+                        attributeList.push('</div>');
+                        $("#masterDataItemInfoUpdateModalBody").append(
+                            '<div class="form-group">'+
+                            '<div class="col-sm-5"><strong>Attributes</strong></div>'+
+                            '<div class="col-sm-5"><strong>Value</strong></div>'+
+                            '<div class="col-sm-2"></div>'+
+                            '</div>'+
+                            attributeList.join("")
+                        );
+                    }
+
+                    if(data.hasOwnProperty("childrens")) {
+                        var childrens = data.childrens;
+                        var childrenList = new Array();
+                        childrenList.push('<div class="childList">');
+                        var childrenLenght = Object.keys(childrens).length
+                        var count = 1;
+                        $.each(childrens, function(index, value) {
+                            var hidden = true;
+                            var label = false;
+                            if(childrenLenght == count) {
+                                hidden = false;
+                            }
+                            if(index==0) {
+                                label = true;
+                            }
+                            childrenList.push(getChildTemplate(value, hidden, label));
+                            count++;
+                        });
+                        childrenList.push('</div>');
+                        $("#masterDataItemInfoUpdateModalBody").append(
+                            childrenList.join("")
+                        );
+                    } else {
+                        var childrenList = new Array();
+                        childrenList.push('<div class="childList">');
+                        childrenList.push(getChildTemplate("","",true));
+                        childrenList.push('</div>');
+                        $("#masterDataItemInfoUpdateModalBody").append(
+                            childrenList.join("")
+                        );
+                    }
+
+                    $('#masterDataUpdateModal').modal('show');
+                },
+                error: function(xhr) {
+                    //Do Something to handle error
+                }
+            });
+        });
+
+        $(document).on("click", "#updateMasterDataSubmit", function(e) {
+            var attributes = {};
+            var childrens = [];
+            var vocabulary = {};
+            var childrenCount = 0;
+            $upateMasterData = $("#updateMasterDataForm").serializeArray();
+            for (var i = 0; i < $upateMasterData.length; i++){
+                if($upateMasterData[i]['name'] == 'id' && $upateMasterData[i]['value'] != '') {
+                    vocabulary[$upateMasterData[i]['name']] = $upateMasterData[i]['value']
+                } else if ($upateMasterData[i]['name'] == 'type' && $upateMasterData[i]['value'] != '') {
+                    vocabulary[$upateMasterData[i]['name']] = $upateMasterData[i]['value']
+                } else if($upateMasterData[i]['name'] == 'attributes' && $upateMasterData[i]['value'] != '') {
+                    attributes[$upateMasterData[i]['value']] = $upateMasterData[i+1]['value']
+                } else if($upateMasterData[i]['name'] == 'childrens' && $upateMasterData[i]['value'] != '') {
+                    childrens[childrenCount] =  $upateMasterData[i]['value'];
+                    childrenCount++;
+                }
+            }
+
+            if(!jQuery.isEmptyObject(attributes)) {
+                vocabulary['attributes'] = attributes;
+            }
+            if(!jQuery.isEmptyObject(childrens)) {
+                vocabulary['childrens'] = childrens;
+            }
+
+            var masterData = getMasterDataJsonFormat(vocabulary);
+            masterDataCaptureUrl = 'http://' + location.host + '/Service/IntelligentJSONMasterCapture';
+            var accessToken = [[${session.accessToken}]] ;
+            $.ajaxSetup({
+                headers:{
+                    'Authorization': accessToken
+                }
+            });
+            $.ajax({
+                type: "POST",
+                url: masterDataCaptureUrl,
+                contentType: 'application/json',
+                data: JSON.stringify(masterData),
+                success: function(data){
+                    $('#masterDataUpdateModal').modal('hide');
+                    getMasterData(getMasterDataUrl);
+                },
+                error: function(data) {
+                    showAjaxResponseMessage(data);
+                }
+            });
+        });
+
+        $(document).on("click", "#formSearchSubmit", function(e) {
+            var searchMasterDataUrl = getMasterDataUrl;
+            $data = $("#formSearch").serializeArray();
+            var vocabularyName = $data[0]['value'];
+            var eqName = $data[1]['value'];
+            if(vocabularyName != '')
+                searchMasterDataUrl += '&vocabularyName=' + vocabularyName;
+            if(eqName != '')
+                searchMasterDataUrl += '&EQ_name=' + eqName;
+            getMasterData(searchMasterDataUrl);
+            pagination();
+        });
+
+    });
+
+    function paginationTableOnLoad() {
+        $(window).on('load', function() {
+            pagination();
+        });
+    }
+
+    function pagination() {
+        setTimeout(function () {
+            var items = $("table tbody tr");
+            var tablaeBody = $("table tbody");
+            var numItems = items.length;
+            var perPage = 20;
+            var currentUrl = [[${currentUrl}]] + '#page-' ;
+            // Only show the first 20 (or first `per_page`) items initially.
+            tablaeBody.html(items.slice(0,perPage));
+            // Now setup the pagination using the `.pagination-page` div.
+            $("#pagination").pagination({
+                items: numItems,
+                itemsOnPage: perPage,
+                cssStyle: "light-theme",
+                hrefTextPrefix: currentUrl,
+                // This is the actual page changing functionality.
+                onPageClick: function(pageNumber) {
+                    // We need to show and hide `tr`s appropriately.
+                    var showFrom = perPage * (pageNumber - 1);
+                    var showTo = showFrom + perPage;
+                    tablaeBody.html(items.slice(showFrom,showTo));
+                }
+            });
+        },1000);
+    }
+    paginationTableOnLoad();
+    /*]]>*/
+</script>
+
+<body>
+    <div layout:fragment="content">
+        <div>
+            <h2 class="text-center">MasterData</h2>
+        </div>
+        <div>
+            <h3>EPCIS REPOSITORY</h3>
+        </div>
+        <div>
+            <nav class="navbar navbar-default" role="navigation">
+                <div class="container-fluid">
+                    <!-- Brand and toggle get grouped for better mobile display -->
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <a class="navbar-brand" href="#"></a>
+                    </div>
+
+                    <!-- Collect the nav links, forms, and other content for toggling -->
+                    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                        <ul class="nav navbar-nav">
+                            <li class="active"><a href="#">Master Data</a></li>
+                        </ul>
+                        <ul class="nav navbar-nav navbar-right">
+                            <li class="btn-success"><a href="/home" style="color:white">Back</a></li>
+                        </ul>
+
+                    </div><!-- /.navbar-collapse -->
+                </div><!-- /.container-fluid -->
+            </nav>
+        </div>
+        <div>
+            <div class="col-sm-offset-3 col-sm-9">
+                <form class="form-inline" id="formSearch">
+                    <div class="form-group">
+                        <label>Type</label>
+                        <select name="vocabularyName" class="form-control">
+                            <option value="">-- Select a type --</option>
+                            <option value="urn:epcglobal:epcis:vtype:ReadPoint">ReadPointID</option>
+                            <option value="urn:epcglobal:epcis:vtype:BusinessLocation">BusinessLocationID</option>
+                            <option value="urn:epcglobal:epcis:vtype:BusinessStep">BusinessStepID</option>
+                            <option value="urn:epcglobal:epcis:vtype:Disposition">DispositionID</option>
+                            <option value="urn:epcglobal:epcis:vtype:BusinessTransaction">BusinessTransaction</option>
+                            <option value="urn:epcglobal:epcis:vtype:BusinessTransactionType">BusinessTrasactionTypeID</option>
+                            <option value="urn:epcglobal:epcis:vtype:EPCClass">EPCClass</option>
+                            <option value="urn:epcglobal:epcis:vtype:SourceDestType">SourceDestTypeID</option>
+                            <option value="urn:epcglobal:epcis:vtype:SourceDest">SourceDestID</option>
+                            <option value="urn:epcglobal:epcis:vtype:Location">LocationID</option>
+                            <option value="urn:epcglobal:epcis:vtype:ErrorReason">ErrorReasonID</option>
+                            <option value="urn:epcglobal:epcis:vtype:CountryCode">CountryCodeID</option>
+                            <option value="urn:epcglobal:epcis:vtype:SubSiteAttribute">SubSiteAttributeID</option>
+                            <option value="urn:epcglobal:epcis:vtype:SubSiteType">SubSiteTypeID</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>ID</label>
+                        <input type="text" name="eqName" class="form-control" placeholder="id" />
+                    </div>
+                    <button type="button" class="btn btn-primary" id="formSearchSubmit">Search</button>
+                </form>
+            </div>
+        </div>
+        <div>
+            <div class="col-sm-6">
+                <h4>Master Data</h4>
+            </div>
+            <div class="col-sm-6">
+                <button type="button" class="btn btn-primary pull-right" data-toggle="modal" data-target="#masterDataModal">
+                    <span class="glyphicon glyphicon-plus"></span> | Add Master Data
+                </button>
+                <!-- Button trigger modal -->
+            </div>
+        </div>
+        <div>
+            <table class="table table-bordred table-striped" id="masterDataTable">
+                <thead>
+                <tr>
+                    <th scope="col"></th>
+                    <th scope="col">Type</th>
+                    <th scope="col">ID</th>
+                    <th scope="col">LastUpdated</th>
+                </tr>
+                </thead>
+                <tbody id="attributeListBody">
+                <!-- <tr class="attribute-tr">
+                  <td>
+                      <button type="button" class="btn btn-default btn-xs">
+                         <span class="glyphicon glyphicon-trash"></span>
+                    </button>
+                    <button type="button" class="btn btn-default btn-xs">
+                         <span class="glyphicon glyphicon-pencil"></span>
+                    </button>
+                    <button type="button" class="btn btn-default btn-xs">
+                         <span class="glyphicon glyphicon-info-sign"></span>
+                    </button>
+                  </td>
+                  <td>urn:epcglobal:epcis:vtype:BusinessLocation</td>
+                  <td>@urn:epc:id:sgln:0037000.00729.8201</td>
+                </tr> -->
+                </tbody>
+            </table>
+            <div id="pagination" class="mtop25"></div>
+        </div>
+
+        <!-- Master Data Add Modal  -->
+        <div class="modal fade" id="masterDataModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Add Master Data</h4>
+                    </div>
+                    <form role="form" id="addMasterDataForm" action="#" method="POST" class="form-horizontal">
+                        <div class="modal-body" id="masterDataAddModalBody">
+                            <div class="form-group">
+                                <label class="col-sm-1 control-label">Type</label>
+                                <div class="col-sm-10">
+                                    <select name="type" class="form-control" id="attributeType" required="required">
+                                        <option value="">-- Select a type --</option>
+                                        <option value="urn:epcglobal:epcis:vtype:ReadPoint">ReadPointID</option>
+                                        <option value="urn:epcglobal:epcis:vtype:BusinessLocation">BusinessLocationID</option>
+                                        <option value="urn:epcglobal:epcis:vtype:BusinessStep">BusinessStepID</option>
+                                        <option value="urn:epcglobal:epcis:vtype:Disposition">DispositionID</option>
+                                        <option value="urn:epcglobal:epcis:vtype:BusinessTransaction">BusinessTransaction</option>
+                                        <option value="urn:epcglobal:epcis:vtype:BusinessTransactionType">BusinessTrasactionTypeID</option>
+                                        <option value="urn:epcglobal:epcis:vtype:EPCClass">EPCClass</option>
+                                        <option value="urn:epcglobal:epcis:vtype:SourceDestType">SourceDestTypeID</option>
+                                        <option value="urn:epcglobal:epcis:vtype:SourceDest">SourceDestID</option>
+                                        <option value="urn:epcglobal:epcis:vtype:Location">LocationID</option>
+                                        <option value="urn:epcglobal:epcis:vtype:ErrorReason">ErrorReasonID</option>
+                                        <option value="urn:epcglobal:epcis:vtype:CountryCode">CountryCodeID</option>
+                                        <option value="urn:epcglobal:epcis:vtype:SubSiteAttribute">SubSiteAttributeID</option>
+                                        <option value="urn:epcglobal:epcis:vtype:SubSiteType">SubSiteTypeID</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-1"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-1 control-label">ID</label>
+                                <div class="col-sm-10">
+                                    <input name="id" type="text" class="form-control" placeholder="urn:epc:id:sgln:B1" required="required" />
+                                </div>
+                                <div class="col-sm-1"></div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-5"><strong>Attributes</strong></div>
+                                <div class="col-sm-5"><strong>Value</strong></div>
+                                <div class="col-sm-2"></div>
+                            </div>
+                            <div class="attributeList">
+                                <div class="form-group attribute">
+                                    <div class="col-sm-5">
+                                        <input name="attributes" type="text" class="form-control attributes-name" placeholder="Attribute" required="required" />
+                                    </div>
+                                    <div class="col-sm-5">
+                                        <input name="a_values" type="text" class="form-control attributes-value" placeholder="Value" required="required" />
+                                    </div>
+                                    <div class="col-sm-1 m-left-20">
+                                        <button type="button" class="btn btn-default attributeDel hidden">
+                                            <span class="glyphicon glyphicon-trash"></span>
+                                        </button>
+                                    </div>
+                                    <div class="col-sm-1">
+                                        <button type="button" class="btn btn-default" id="addAttribute">
+                                            <span class="glyphicon glyphicon-plus"></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="childList">
+                                <div class="form-group child">
+                                    <label class="col-sm-1 control-label">Child</label>
+                                    <div class="col-sm-9">
+                                        <input name="childrens" type="text" class="form-control childrens-name" placeholder="urn:epc:id:sgln:B1" />
+                                    </div>
+                                    <div class="col-sm-1 m-left-20"></div>
+                                    <div class="col-sm-1">
+                                        <button type="button" class="btn btn-default" id="addChild">
+                                            <span class="glyphicon glyphicon-plus"></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                            <button type="button" id="addMasterDataSubmit" class="btn btn-primary">Confirm</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Master Data Add Modal  -->
+
+        <!-- Master Data Item View Info Modal  -->
+        <div class="modal fade" id="masterDataItemInfoModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">View Master Data</h4>
+                    </div>
+                    <form role="form" class="form-horizontal">
+                        <div class="modal-body" id="masterDataItemInfoModalBody">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Master Data Item View Info Modal  -->
+
+        <!-- Master Data Update Modal  -->
+        <div class="modal fade" id="masterDataUpdateModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">Update Master Data</h4>
+                    </div>
+                    <form role="form" id="updateMasterDataForm" action="#" method="POST" class="form-horizontal">
+                        <div class="modal-body" id="masterDataItemInfoUpdateModalBody">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                            <button type="button" id="updateMasterDataSubmit" class="btn btn-primary">Confirm</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Master Data Update Modal  -->
+
+        <!-- Master Data Delete Modal  -->
+        <div class="modal fade" id="deleteMasterDataModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Delete Master Data</h4>
+                    </div>
+                    <form role="form" id="deleteMasterDataForm" action="#" method="POST" class="form-horizontal">
+                        <div class="modal-body" id="masterDataItemDeleteModalBody">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-info" data-dismiss="modal">Cancel</button>
+                            <button type="button" id="deleteMasterDataSubmit" class="btn btn-danger">Delete</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Master Data Delete Modal  -->
+    </div>
+
+    <div layout:fragment="custom-footer">
+        &copy; BIBA, 2019
+    </div>
+</body>
+</html>

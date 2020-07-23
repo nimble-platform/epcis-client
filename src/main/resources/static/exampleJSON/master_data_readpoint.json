@@ -1,0 +1,40 @@
+{
+    "epcismd": {
+        "EPCISBody": {
+            "VocabularyList": [
+                {
+                    "Vocabulary": {
+                        "id": "urn:epc:id:sgln:R1",
+                        "type": "urn:epcglobal:epcis:vtype:ReadPoint",
+                        "attributes": {
+                            "urn:epcglobal:cbv:mda#name": "Robot area gate",
+                            "urn:epcglobal:cbv:mda#city": "Ojebyn",
+                            "urn:epcglobal:cbv:mda#streetAddressOne": "Skylvägen 1",
+                            "urn:epcglobal:cbv:mda#countryCode": "SE",
+                            "urn:epcglobal:cbv:mda:site": "PodComp factory",
+                            "urn:epcglobal:cbv:mda:sst": "208",
+                            "urn:epcglobal:cbv:mda:ssa": "433",
+                            "urn:epcglobal:cbv:mda:ssd": "Gate A"
+                        }
+                    }
+                }, 
+                {
+                    "Vocabulary": {
+                        "id": "urn:epc:id:sgln:R2",
+                        "type": "urn:epcglobal:epcis:vtype:ReadPoint",
+                        "attributes": {
+                            "urn:epcglobal:cbv:mda#name": "Tiling area gate",
+                            "urn:epcglobal:cbv:mda#city": "Ojebyn",
+                            "urn:epcglobal:cbv:mda#streetAddressOne": "Skylvägen 1",
+                            "urn:epcglobal:cbv:mda#countryCode": "SE",
+                            "urn:epcglobal:cbv:mda:site": "PodComp factory",
+                            "urn:epcglobal:cbv:mda:sst": "208",
+                            "urn:epcglobal:cbv:mda:ssa": "433",
+                            "urn:epcglobal:cbv:mda:ssd": "Gate B"
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

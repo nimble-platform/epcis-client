@@ -1,0 +1,42 @@
+{
+    "epcismd": {
+        "EPCISBody": {
+            "VocabularyList": [
+                {
+                    "Vocabulary": {
+                        "id": "urn:epc:id:sgln:B1",
+                        "type": "urn:epcglobal:epcis:vtype:BusinessLocation",
+                        "attributes": {
+                            "urn:epcglobal:cbv:mda#name": "Undefined area",
+                            "urn:epcglobal:cbv:mda#city": "Öjebyn",
+                            "urn:epcglobal:cbv:mda#streetAddressOne": "Skylvägen 1",
+                            "urn:epcglobal:cbv:mda#countryCode": "SE",
+                            "urn:epcglobal:cbv:mda:site": "PodComp factory",
+                            "urn:epcglobal:cbv:mda:sst": "299"
+                        },
+                        "children": [
+                            "urn:epc:id:sgln:0037000.00729.8201",
+                            "urn:epc:id:sgln:0037000.00729.8202",
+                            "urn:epc:id:sgln:0037000.00729.8203"
+                        ]
+                    }
+                },
+                { 
+                    "Vocabulary": {
+                        "id": "urn:epc:id:sgln:B2",
+                        "type": "urn:epcglobal:epcis:vtype:BusinessLocation",
+                        "attributes": {
+                            "urn:epcglobal:cbv:mda#name": "Robot area",
+                            "urn:epcglobal:cbv:mda#city": "Öjebyn",
+                            "urn:epcglobal:cbv:mda#streetAddressOne": "Skylvägen 1",
+                            "urn:epcglobal:cbv:mda#countryCode": "SE",
+                            "urn:epcglobal:cbv:mda:site": "PodComp factory",
+                            "urn:epcglobal:cbv:mda:sst": "299",
+                            "urn:epcglobal:cbv:mda:ssa": "433"
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

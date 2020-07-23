@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorator="layouts/default">
+
+<script type="text/javascript" layout:fragment="custom-script" th:inline="javascript">
+    /*<![CDATA[*/
+    function createValidationResultMessage(result) {
+        if (result.isValidated == false)
+            return null;
+        return "EventData: " + result.eventDataCount + " , Vocabularies: "
+            + result.vocabularyCount + " , VocabularyElements: "
+            + result.vocabularyElementCount;
+    }
+
+    $(document)
+        .ready(
+            function() {
+                // Loading a selected example to the text area
+                $(".dropdown-menu")
+                    .on(
+                        "click",
+                        "li a",
+                        function(event) {
+                            $("#xmlTextArea")
+                                .load(
+                                    $(this)[0].id,
+                                    function() {
+                                        var valXMLString = $(
+                                            "#xmlTextArea")
+                                            .val();
+                                    });
+                        })
+                $('#captureURL').val(
+                    'http://' + location.host
+                    + '/Service/IntelligentJSONEventCapture');
+            });
+
+    function capture() {
+        var captureURL = $("#captureURL").val();
+        var captureXMLString = $("#xmlTextArea").val();
+
+        var accessToken = [[${session.accessToken}]] ;
+        $.ajaxSetup({
+            headers:{
+                'Authorization': accessToken
+            }
+        });
+
+        $.ajax({
+            type : "POST",
+            url : captureURL,
+            data : captureXMLString,
+            contentType : "application/xml; charset=utf-8"
+        }).done(function(result) {
+            $("#resp").val(result).hide().fadeIn('slow');
+        }).error(function(result) {
+            $("#resp").val(result.responseText).hide().fadeIn('slow');
+        });
+    }
+
+    function replaceURL(type) {
+        if (type == "event") {
+            var str = $("#captureURL").val();
+            str = str.replace("Vocabulary", "JSONEvent");
+            str = str.replace("ECReport", "JSONEvent");
+            str = str.replace("JSONProductionProcTemplate", "JSONEvent");
+            $("#captureURL").val(str);
+        }
+
+    }
+
+    function movePage(page) {
+        document.location.href = page;
+    }
+    /*]]>*/
+</script>
+
+<body>
+    <div layout:fragment="content">
+        <div class="panel panel-info">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed"
+                        data-toggle="collapse" data-target="#navbar" aria-expanded="false"
+                        aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span> <span
+                        class="icon-bar"></span> <span class="icon-bar"></span> <span
+                        class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">EPCIS Event Capture Client</a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <form class="navbar-form navbar-right">
+                    <button type="button" class="btn btn-success"
+                            onclick="movePage('/home')">Back</button>
+                </form>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-4">
+                        <h4>EPCIS Capture URL (Change IP or Domain if needed)</h4>
+                        <input id="captureURL" type="text" class="form-control"
+                               value="http://localhost:8080/epcis/Service/JSONEventCapture"
+                               placeholder="http://localhost:8080/epcis/Service/JSONEventCapture" />
+                        <h4>Event Capture</h4>
+                        <button type="button" class="btn btn-success" onclick="capture()">Capture</button>
+                        <input id="resp" type="text" class="form-control" disabled="disabled"
+                               placeholder="Capture Server Response" />
+                    </div>
+                    <div class="col-sm-8">
+                        <h4>HTTP.POST Body</h4>
+
+                        <div class="dropdown">
+
+                            <button class="btn btn-default dropdown-toggle" type="button"
+                                    id="dropData" data-toggle="dropdown" aria-haspopup="true"
+                                    aria-expanded="true">
+                                Loading an example<span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                                <li class="dropdown-header">Event Data Examples</li>
+                                <li><a id="./exampleJSON/gs1example1Json(Object).json" th:href="@{${currentUrl}} + '#'">GS1
+                                    Example 1 [EPCIS v1.2 section 9.6.1]</a></li>
+                                <li><a id="./exampleJSON/gs1example2Json(Object).json" th:href="@{${currentUrl}} + '#'">GS1
+                                    Example 2 [EPCIS v1.2 section 9.6.2]</a></li>
+                                <li><a id="./exampleJSON/gs1example3Json(Aggregation).json"
+                                       th:href="@{${currentUrl}} + '#'">GS1 Example 3 [EPCIS v1.2 section 9.6.3]</a></li>
+                                <li><a id="./exampleJSON/gs1example4Json(Transformation).json"
+                                       th:href="@{${currentUrl}} + '#'">GS1 Example 4 [EPCIS v1.2 section 9.6.4]</a></li>
+                            </ul>
+                        </div>
+                        <textarea id="xmlTextArea" class="form-control auto-text-area"
+                                  rows="14"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <td>Method Name</td>
+                        <td>Description</td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>JSON Event Capture</td>
+                        <td>
+                            <ul class="list-group">
+                                <li class="list-group-item">This service allows you to
+                                    store your EPCIS Document into your backend storage.</li>
+                                <li class="list-group-item">Method: post</li>
+                                <li class="list-group-item">Contents: application/json,
+                                    complying with <a href="./jsonSchema/ObjectEventSchema.json">EPCIS
+                                        v1.2 Object Event Schema</a>
+                                </li>
+                                <li class="list-group-item">URL Format: <br />
+                                    http://{base-url}:{base-port}/Service/JSONEventCapture <br />
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div layout:fragment="custom-footer">
+        &copy; BIBA 2019; Auto-ID Labs, KAIST 2017
+    </div>
+</body>
+</html>
