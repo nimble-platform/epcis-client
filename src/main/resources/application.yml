@@ -37,7 +37,7 @@ spring:
       spec: initialCapacity=50,maximumSize=500,expireAfterWrite=3600s
   data:
     mongodb:
-      database: ${EPCIS_DB_NAME:epcis}
+      database: ${EPCIS_CLIENT_DB_NAME:epcis}
       ssl: ${EPCIS_DB_SSL:false}
       uri: ${EPCIS_DB_URL:mongodb://localhost:27017/} 
   identity-service:
